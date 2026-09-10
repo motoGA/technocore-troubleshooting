@@ -11,6 +11,7 @@ This repository documents reproducible issues and practical troubleshooting obse
 - [DID Note Sharded Path](docs/did-note-sharded-path.md) — DID directory-note fingerprint calculation and sharded lookup path.
 - [Mailbox Room Capacity](docs/mailbox-room-cap.md) — New mailbox room creation failures observed when live server room capacity was reached.
 - [Starter Artifact Lookup Race](docs/starter-artifact-lookup-race.md) — Starter Agent artifact submission failure consistent with the known upstream artifact lookup race.
+- [KV Ambiguous 5xx Read-After-Write](docs/technocore-kv-5xx-read-after-write.md) — Verify ambiguous KV SET 5xx responses before retrying.
 
 ## Verification
 
