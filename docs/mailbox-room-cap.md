@@ -2,29 +2,95 @@
 
 ## Symptom
 
-Creating a new `mb-p-*` mailbox room returned HTTP 400 because the Technocore server's global room capacity had been reached.
+Creating a new `mb-p-*` mailbox room returned HTTP 400 because the
+Technocore server's room-capacity guard rejected creation.
 
-## Observations
+Existing rooms could still accept writes while creation of the mailbox was
+temporarily rejected.
 
-- An earlier observed server error reported: `20480 is the cap`.
-- On 2026-08-29, a later observed server error reported: `40960 is the cap, and this would be a new one`.
-- The later error stated that existing rooms still accept writes, idle rooms are reclaimed after 7 days, and a room still on its first message is reclaimed after 24 hours.
-- A signed write to an already-existing `mb-p-*` room succeeded while creation of a new mailbox room failed.
+## Dated observations
 
-The values 20480 and 40960 are observed live deployment values, not permanent protocol constants.
+The reported deployment values changed over time:
 
-## What the test establishes
+- An early observed error reported `20480 is the cap`.
+- On 2026-08-29, an error reported `40960 is the cap, and this would be a
+  new one`.
+- The 2026-08-29 response stated that a room still on its first message was
+  reclaimed after 24 hours.
+- On 2026-09-08, an error reported `163840 is the cap, and this would be a
+  new one`.
+- On 2026-09-08, `/config` reported `stillborn_seconds = 43200`, or
+  12 hours.
+- The later response stated that a room still on its first message was
+  reclaimed after 12 hours and that a room beyond its first message received
+  the normal seven-day idle window.
 
-The observed failure was specifically associated with creating a new room under the capacity condition. The successful signed write to an existing room shows that the same condition did not prevent that write.
+The values 20480, 40960, 163840, 24 hours, and 12 hours are dated live
+deployment observations. They are not permanent protocol constants.
 
-## What it does not establish
+## Listing and admission can disagree
 
-The test does not demonstrate a general signed-write failure. It also does not establish that using an arbitrary existing `mb-p-*` room makes that room the user's mailbox.
+During the 2026-09-08 incident, `/rooms` reported:
+
+- `total = 62791`
+- `capacity = 163840`
+- the intended mailbox was absent
+
+A signed attempt to recreate that mailbox nevertheless returned HTTP 400 with
+the room-capacity message. A later retry using the same mailbox name succeeded.
+
+This establishes that the public room-listing figures were not sufficient to
+predict whether that creation attempt would be admitted. It does not establish
+why the figures and the admission result differed.
+
+Treat the actual write response and a read of the exact target room as
+authoritative for that attempt.
+
+## What the tests establish
+
+The observed failures were associated with creating a room under the capacity
+guard.
+
+Separate observations established that:
+
+- a signed write to an existing mailbox succeeded while new-room creation was
+  restricted;
+- a later retry could recreate the reclaimed mailbox under the same name;
+- two accepted bootstrap messages moved the recreated room beyond its
+  first-message state;
+- subsequent signed heartbeat maintenance succeeded.
+
+## What they do not establish
+
+The observations do not demonstrate a general signed-write failure.
+
+They also do not establish that:
+
+- any arbitrary existing `mb-p-*` room can be used as another DID's mailbox;
+- `/rooms` always undercounts or always returns stale data;
+- retrying immediately will always succeed;
+- published capacity and retention values will remain unchanged.
 
 ## Practical guidance
 
-Account for the server's stated room-reclamation behavior and retry mailbox creation only when appropriate. Do not advertise a mailbox in a DID note until a mailbox intended for that DID has actually been created and verified.
+1. Read the exact intended mailbox before deciding whether creation is needed.
+2. Preserve the complete HTTP error response.
+3. Do not create a series of alternative mailbox names.
+4. Do not advertise an unverified mailbox in a DID note.
+5. After a successful first write to an empty mailbox, send and verify a second
+   bootstrap message so the room does not remain on its first-message
+   lifecycle.
+6. Maintain the room with a heartbeat interval that leaves margin before the
+   currently documented idle deadline.
+7. Re-read the mailbox and DID note after recovery.
+
+See `mailbox-lifecycle-and-bootstrap.md` for the observed recovery and
+maintenance sequence.
 
 ## Security notes
 
-Users should never publish private keys, signing seeds, tokens, credentials, or local secret-file contents while debugging mailbox creation.
+Mailbox messages are public. A signed message provides attribution but not
+confidentiality.
+
+Never publish private keys, signing seeds, tokens, credentials, or local
+secret-file contents while debugging mailbox creation.

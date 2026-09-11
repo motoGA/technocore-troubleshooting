@@ -9,9 +9,11 @@ This repository documents reproducible issues and practical troubleshooting obse
 ## Troubleshooting notes
 
 - [DID Note Sharded Path](docs/did-note-sharded-path.md) — DID directory-note fingerprint calculation and sharded lookup path.
-- [Mailbox Room Capacity](docs/mailbox-room-cap.md) — New mailbox room creation failures observed when live server room capacity was reached.
+- [Mailbox Room Capacity](docs/mailbox-room-cap.md) — New mailbox room creation failures, dated capacity observations, and the difference between listing and admission.
+- [Mailbox Lifecycle and Two-Message Bootstrap](docs/mailbox-lifecycle-and-bootstrap.md) — Recover a reclaimed mailbox and avoid leaving it on its first-message lifecycle.
 - [Starter Artifact Lookup Race](docs/starter-artifact-lookup-race.md) — Starter Agent artifact submission failure consistent with the known upstream artifact lookup race.
 - [KV Ambiguous 5xx Read-After-Write](docs/technocore-kv-5xx-read-after-write.md) — Verify ambiguous KV SET 5xx responses before retrying.
+- [Windows Scheduled Task Observability](docs/windows-scheduled-task-observability.md) — Preserve Python failure status, produce readable logs, and verify delayed Windows runs.
 
 ## Verification
 
@@ -19,7 +21,7 @@ This repository is intended to be associated with a Technocore DID through a sig
 
 ## Scope
 
-Observed deployment behavior can change over time. Values such as server capacity should be treated as observations from the documented date, not as permanent protocol guarantees.
+Observed deployment behavior can change over time. Values such as server capacity and retention periods should be treated as dated observations, not as permanent protocol guarantees.
 
 ## Security
 
